@@ -204,7 +204,7 @@ JOIN software_houses sh ON v.software_house_id = sh.i
 
 24) Selezionare categorie e classificazioni PEGI dei videogiochi che hanno ricevuto recensioni da 4 e 5 stelle, mostrandole una sola volta (3363)
 
-SELECT DISTINCT r.*, pl.*
+SELECT DISTINCT v.id, c.name, pl.name
 FROM categories c 
 JOIN category_videogame cv ON c.id = cv.category_id 
 JOIN videogames v ON v.id = cv.videogame_id
@@ -229,12 +229,12 @@ WHERE LEFT (p.name, 1) = 'S'
 
 26) Selezionare le cittÃ in cui Ã¨ stato giocato il gioco dell'anno del 2018 (36)
 
-SELECT p.city
-FROM players p 
-JOIN reviews r ON r.player_id = p.id
-JOIN videogames v ON r.videogame_id = v.id
-JOIN award_videogame av ON av.videogame_id = v.id 
-JOIN awards a ON a.id = av.award_id 
+SELECT t.city  
+FROM videogames v 
+JOIN tournament_videogame tv ON v.id = tv.videogame_id 
+JOIN tournaments t  ON t.id = tv.tournament_id
+JOIN award_videogame av ON v.id = av.videogame_id
+JOIN awards a ON a.id = av.award_id
 WHERE a.name = "Gioco dell'anno" AND av.`year` = 2018
 
 ----------------------------------------------------------------------------
@@ -276,10 +276,13 @@ LIMIT 1
 
 30) Selezionare le categorie dei videogame i quali hanno una media recensioni inferiore a 2 (10)
 
-SELECT c.*, avg(r.rating) 
-FROM categories c 
-JOIN category_videogame cv ON cv.category_id = c.id 
-JOIN videogames v ON v.id = cv.videogame_id 
-JOIN reviews r ON r.videogame_id = v.id
+SELECT DISTINCT c.*
+FROM categories c
+JOIN category_videogame cv ON c.id = cv.category_id
+WHERE videogame_id in (
+SELECT v.id
+FROM videogames v 
+JOIN reviews r ON v.id = r.videogame_id 
 GROUP BY 1
-HAVING avg(r.rating) < 2
+HAVING avg(rating) < 2
+)
